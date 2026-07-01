@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login } from '@/lib/adminActions';
+
+import { login } from './actions';
 
 const AdminLogin = () => {
   const [password, setPassword] = useState('');

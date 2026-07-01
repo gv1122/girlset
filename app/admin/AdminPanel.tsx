@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import {
-  saveLinks,
   saveBannedWords,
   saveFlagSettings,
   postOfficialMessage,
-  togglePin,
   resolveFlag
 } from '@/lib/adminActions';
+import { saveLinks, togglePin } from './actions';
 
 type DashboardData = {
   links: { presave_url: string; subscribe_url: string };
