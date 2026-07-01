@@ -1,0 +1,165 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { CHAT_CHAR_LIMIT, isMessageBlocked } from "@/lib/wordFilter";
+
+type Message = {
+  id: number;
+  anon_number: number;
+  body: string;
+  is_official: boolean;
+  is_pinned: boolean;
+  created_at: string;
+};
+
+export default function ChatBox({
+  anonNumber,
+  displayName,
+  bannedWords,
+  onJoin,
+  joining,
+}: {
+  anonNumber: number | null;
+  displayName: string | null;
+  bannedWords: string[];
+  onJoin: () => void;
+  joining: boolean;
+}) {
+const [messages, setMessages] = useState<Message[]>([]);
+  const [draft, setDraft] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const posRef = useRef({ x: 24, y: 88 });
+  const dragOffset = useRef<{ x: number; y: number } | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    posRef.current = { x: window.innerWidth - 320 - 24, y: 88 };
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (ready && containerRef.current) {
+      containerRef.current.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px)`;
+    }
+  }, [ready]);
+
+  useEffect(() => {
+    supabase
+      .from("messages")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(200)
+      .then(({ data }) => data && setMessages(data as Message[]));
+
+    const channel = supabase
+      .channel("messages-feed")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
+        setMessages((prev) => [...prev, payload.new as Message]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
+  }, [messages]);
+
+function handlePointerDown(e: React.PointerEvent) {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragOffset.current = { x: e.clientX - posRef.current.x, y: e.clientY - posRef.current.y };
+  }
+  function handlePointerMove(e: React.PointerEvent) {
+    if (!dragOffset.current || !containerRef.current) return;
+    posRef.current = { x: e.clientX - dragOffset.current.x, y: e.clientY - dragOffset.current.y };
+    containerRef.current.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px)`;
+  }
+  function handlePointerUp() {
+    dragOffset.current = null;
+  }
+
+  async function sendMessage() {
+    const body = draft.trim();
+    if (!body || !anonNumber) return;
+    if (body.length > CHAT_CHAR_LIMIT) return;
+    if (isMessageBlocked(body, bannedWords)) {
+      setDraft("");
+      return; 
+    }
+
+    setDraft("");
+    await supabase.from("messages").insert({ anon_number: anonNumber, body, is_official: false });
+  }
+
+  const pinned = messages.filter((m) => m.is_pinned);
+  const feed = messages.filter((m) => !m.is_pinned);
+  const remaining = CHAT_CHAR_LIMIT - draft.length;
+  const joined = anonNumber !== null;
+
+  if (!ready) return null;
+
+  return (
+    <div
+      ref={containerRef}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      style={{ position: "absolute", top: 0, left: 0, touchAction: "none", willChange: "transform" }}
+      className="z-30 flex w-[300px] flex-col border border-chat bg-black/85 font-mono text-xs"
+    >
+      <div
+        onPointerDown={handlePointerDown}
+        className="flex cursor-move items-center justify-between bg-chat px-2 py-1.5 select-none"
+      >
+        <span className="text-white text-xs tracking-wide">Chat</span>
+        <span className="h-2 w-2 rounded-full bg-white animate-blink" />
+      </div>
+
+      {pinned.length > 0 && (
+        <div className="border-b border-chat/50 bg-white/5 px-2 py-1">
+          {pinned.map((m) => (
+            <div key={m.id} className="text-white font-bold">
+              📌 anonymous{m.anon_number}: <span className="font-normal text-chat">{m.body}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div ref={listRef} className="h-72 overflow-y-auto px-2 py-1.5 space-y-1">
+        {feed.map((m) => (
+          <div key={m.id} className="break-words">
+            <span className={m.is_official ? "text-white font-bold" : "text-chat font-bold"}>anonymous{m.anon_number}: </span>
+            <span className="text-chat">{m.body}</span>
+          </div>
+        ))}
+      </div>
+
+      {!joined ? (
+        <button
+          onClick={onJoin}
+          disabled={joining}
+          className="flex items-center justify-between bg-chat px-3 py-2 text-xs text-white hover:brightness-110 disabled:opacity-60"
+        >
+          {joining ? "joining..." : "Login to join the chat"} <span aria-hidden>→</span>
+        </button>
+      ) : (
+        <div className="flex items-center gap-1.5 border-t border-chat/50 p-1.5">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value.slice(0, CHAT_CHAR_LIMIT))}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            placeholder="Type here"
+            className="flex-1 bg-transparent text-chat placeholder:text-white/30 outline-none"
+          />
+          <span className="text-[10px] text-white/40">{draft.length}/{CHAT_CHAR_LIMIT}</span>
+          <button onClick={sendMessage} className="bg-chat px-2 py-1 text-white hover:brightness-110" aria-label="send">
+            →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
