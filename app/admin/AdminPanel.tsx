@@ -8,7 +8,7 @@ import {
   postOfficialMessage,
   togglePin,
   resolveFlag
-} from '@/app/admin/actions';
+} from '@/lib/adminActions';
 
 type DashboardData = {
   links: { presave_url: string; subscribe_url: string };
