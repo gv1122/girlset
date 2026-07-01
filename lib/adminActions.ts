@@ -1,5 +1,3 @@
-'use server';
-
 import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
@@ -27,13 +25,13 @@ export const saveLinks = async (presaveUrl: string, subscribeUrl: string) => {
     key: 'links',
     value: { presave_url: presaveUrl, subscribe_url: subscribeUrl }
   });
-}
+};
 
 export const saveBannedWords = async (words: string[]) => {
   await supabaseAdmin
     .from('admin_settings')
     .upsert({ key: 'banned_words', value: words });
-}
+};
 
 export const saveFlagSettings = async (
   enabled: boolean,
@@ -48,7 +46,7 @@ export const saveFlagSettings = async (
       chat_filter_enabled: chatFilterEnabled
     }
   });
-}
+};
 
 export const postOfficialMessage = async (body: string, pinned: boolean) => {
   if (!body.trim() || body.length > 60) return;
@@ -58,21 +56,21 @@ export const postOfficialMessage = async (body: string, pinned: boolean) => {
     is_official: true,
     is_pinned: pinned
   });
-}
+};
 
 export const togglePin = async (id: number, pinned: boolean) => {
   await supabaseAdmin
     .from('messages')
     .update({ is_pinned: pinned })
     .eq('id', id);
-}
+};
 
 export const resolveFlag = async (
   id: number,
   status: 'reviewed' | 'dismissed'
 ) => {
   await supabaseAdmin.from('flags').update({ status }).eq('id', id);
-}
+};
 
 export const getDashboardData = async () => {
   const [links, bannedWords, flagSettings, openFlags, pinnedMessages] =
@@ -115,4 +113,4 @@ export const getDashboardData = async () => {
     openFlags: openFlags.data ?? [],
     pinnedMessages: pinnedMessages.data ?? []
   };
-}
+};

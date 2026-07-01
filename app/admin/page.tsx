@@ -1,4 +1,4 @@
-import { isAdmin, getDashboardData } from '@/app/admin/actions';
+import { isAdmin, getDashboardData } from '@/lib/adminActions';
 import AdminLogin from '@/app/admin/AdminLogin';
 import AdminPanel from '@/app/admin/AdminPanel';
 
@@ -10,3 +10,4 @@ const AdminPage = async () => {
   return <AdminPanel initialData={data} />;
 };
 
+export default AdminPage;
