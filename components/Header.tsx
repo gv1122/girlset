@@ -2,26 +2,13 @@
 import { useState } from 'react';
 import EmailSubscribeModal from '@/components/EmailSubscribeModal';
 
-function CtaButton({ href, label }: { href: string; label: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-2 bg-chat px-3 py-1.5 text-xs text-white hover:brightness-110 transition-[filter]"
-    >
-      {label} <span aria-hidden>→</span>
-    </a>
-  );
-}
-
-export default function Header({
+const Header = ({
   presaveUrl,
   siteUrl = 'GIRLSINTHECHAT.COM'
 }: {
   presaveUrl: string;
   siteUrl?: string;
-}) {
+}) => {
   const [showSubscribe, setShowSubscribe] = useState(false);
 
   return (
@@ -55,4 +42,6 @@ export default function Header({
       )}
     </header>
   );
-}
+};
+
+export default Header;

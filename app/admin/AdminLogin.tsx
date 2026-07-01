@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login } from '@/app/admin/actions';
 
-export default function AdminLogin() {
+export const AdminLogin = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -43,4 +43,6 @@ export default function AdminLogin() {
       </form>
     </div>
   );
-}
+};
+
+export default AdminLogin;

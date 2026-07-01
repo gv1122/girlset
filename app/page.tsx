@@ -9,7 +9,7 @@ import Stage, { FilterMode, StageSource } from '@/components/Stage';
 import ChatBox from '@/components/ChatBox';
 import Footer, { SiteMode } from '@/components/Footer';
 
-export default function Home() {
+const Home = () => {
   const {
     anonNumber,
     displayName,
@@ -31,7 +31,7 @@ export default function Home() {
     webcam_nsfw_threshold: 0.75
   });
 
-  async function handleCapture() {
+  const handleCapture = async () => {
     if (!stageContainerRef.current) return;
     const html2canvas = (await import('html2canvas')).default;
     const shot = await html2canvas(stageContainerRef.current, {
@@ -55,7 +55,7 @@ export default function Home() {
     a.href = dataUrl;
     a.download = 'girlset.png';
     a.click();
-  }
+  };
 
   useEffect(() => {
     supabase
@@ -121,4 +121,6 @@ export default function Home() {
       />
     </main>
   );
-}
+};
+
+export default Home;

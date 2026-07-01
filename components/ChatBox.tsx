@@ -13,7 +13,7 @@ type Message = {
   created_at: string;
 };
 
-export default function ChatBox({
+const ChatBox = ({
   anonNumber,
   displayName,
   bannedWords,
@@ -25,7 +25,7 @@ export default function ChatBox({
   bannedWords: string[];
   onJoin: () => void;
   joining: boolean;
-}) {
+}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
@@ -73,26 +73,27 @@ export default function ChatBox({
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
   }, [messages]);
 
-  function handlePointerDown(e: React.PointerEvent) {
+  const handlePointerDown = (e: React.PointerEvent) => {
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     dragOffset.current = {
       x: e.clientX - posRef.current.x,
       y: e.clientY - posRef.current.y
     };
-  }
-  function handlePointerMove(e: React.PointerEvent) {
+  };
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (!dragOffset.current || !containerRef.current) return;
     posRef.current = {
       x: e.clientX - dragOffset.current.x,
       y: e.clientY - dragOffset.current.y
     };
     containerRef.current.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px)`;
-  }
-  function handlePointerUp() {
-    dragOffset.current = null;
-  }
+  };
 
-  async function sendMessage() {
+  const handlePointerUp = () => {
+    dragOffset.current = null;
+  };
+
+  const sendMessage = async () => {
     const body = draft.trim();
     if (!body || !anonNumber) return;
     if (body.length > CHAT_CHAR_LIMIT) return;
@@ -105,7 +106,7 @@ export default function ChatBox({
     await supabase
       .from('messages')
       .insert({ anon_number: anonNumber, body, is_official: false });
-  }
+  };
 
   const pinned = messages.filter(m => m.is_pinned);
   const feed = messages.filter(m => !m.is_pinned);
@@ -157,7 +158,7 @@ export default function ChatBox({
                   : 'text-white font-bold'
               }
             >
-              Anonymous{m.anon_number}:
+              Anonymous{m.anon_number}:{' '}
             </span>
             <span className="text-chat">{m.body}</span>
           </div>
@@ -196,4 +197,6 @@ export default function ChatBox({
       )}
     </div>
   );
-}
+};
+
+export default ChatBox;

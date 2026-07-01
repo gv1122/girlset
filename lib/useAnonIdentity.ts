@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 const STORAGE_KEY = 'girlset_anon_number';
 
-export function useAnonIdentity() {
+export const useAnonIdentity = () => {
   const [anonNumber, setAnonNumber] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,4 +37,4 @@ export function useAnonIdentity() {
     loading,
     claim
   };
-}
+};

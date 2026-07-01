@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 const COOKIE_NAME = 'girlset_admin';
 
-export async function login(password: string) {
+export const login = async (password: string) => {
   if (password !== process.env.ADMIN_PASSWORD) {
     return { ok: false, error: 'Wrong password.' };
   }
@@ -16,32 +16,30 @@ export async function login(password: string) {
     maxAge: 60 * 60 * 8 // 8 hours
   });
   return { ok: true };
-}
+};
 
-export async function isAdmin() {
+export const isAdmin = async () => {
   return cookies().get(COOKIE_NAME)?.value === process.env.ADMIN_PASSWORD;
+};
+
+export const saveLinks = async (presaveUrl: string, subscribeUrl: string) => {
+  await supabaseAdmin.from('admin_settings').upsert({
+    key: 'links',
+    value: { presave_url: presaveUrl, subscribe_url: subscribeUrl }
+  });
 }
 
-export async function saveLinks(presaveUrl: string, subscribeUrl: string) {
-  await supabaseAdmin
-    .from('admin_settings')
-    .upsert({
-      key: 'links',
-      value: { presave_url: presaveUrl, subscribe_url: subscribeUrl }
-    });
-}
-
-export async function saveBannedWords(words: string[]) {
+export const saveBannedWords = async (words: string[]) => {
   await supabaseAdmin
     .from('admin_settings')
     .upsert({ key: 'banned_words', value: words });
 }
 
-export async function saveFlagSettings(
+export const saveFlagSettings = async (
   enabled: boolean,
   threshold: number,
   chatFilterEnabled: boolean
-) {
+) => {
   await supabaseAdmin.from('admin_settings').upsert({
     key: 'flag_settings',
     value: {
@@ -52,33 +50,31 @@ export async function saveFlagSettings(
   });
 }
 
-export async function postOfficialMessage(body: string, pinned: boolean) {
+export const postOfficialMessage = async (body: string, pinned: boolean) => {
   if (!body.trim() || body.length > 60) return;
-  await supabaseAdmin
-    .from('messages')
-    .insert({
-      anon_number: 0,
-      body: body.trim(),
-      is_official: true,
-      is_pinned: pinned
-    });
+  await supabaseAdmin.from('messages').insert({
+    anon_number: 0,
+    body: body.trim(),
+    is_official: true,
+    is_pinned: pinned
+  });
 }
 
-export async function togglePin(id: number, pinned: boolean) {
+export const togglePin = async (id: number, pinned: boolean) => {
   await supabaseAdmin
     .from('messages')
     .update({ is_pinned: pinned })
     .eq('id', id);
 }
 
-export async function resolveFlag(
+export const resolveFlag = async (
   id: number,
   status: 'reviewed' | 'dismissed'
-) {
+) => {
   await supabaseAdmin.from('flags').update({ status }).eq('id', id);
 }
 
-export async function getDashboardData() {
+export const getDashboardData = async () => {
   const [links, bannedWords, flagSettings, openFlags, pinnedMessages] =
     await Promise.all([
       supabaseAdmin

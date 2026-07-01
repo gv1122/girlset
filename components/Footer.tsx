@@ -37,7 +37,7 @@ const SOCIALS = [
   }
 ];
 
-export default function Footer({
+const Footer = ({
   showMedia,
   filter,
   onFilter,
@@ -59,17 +59,7 @@ export default function Footer({
   eyeBarOn: boolean;
   onEyeBarToggle: () => void;
   sourceSelected: boolean;
-}) {
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-
-  function handleDownload() {
-    if (!canvas) return;
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = 'girlset.png';
-    a.click();
-  }
-
+}) => {
   return (
     <footer className="relative z-20 flex h-12 w-full items-center justify-between bg-chat px-4 font-mono text-xs text-white">
       <div className="flex items-center gap-2">
@@ -145,4 +135,6 @@ export default function Footer({
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

@@ -3,17 +3,13 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function EmailSubscribeModal({
-  onClose
-}: {
-  onClose: () => void;
-}) {
+const EmailSubscribeModal = ({ onClose }: { onClose: () => void }) => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'error'>(
     'idle'
   );
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const value = email.trim();
     if (!value) return;
@@ -23,7 +19,7 @@ export default function EmailSubscribeModal({
       .from('subscribers')
       .insert({ email: value });
     setStatus(error && error.code !== '23505' ? 'error' : 'done');
-  }
+  };
 
   return (
     <div
@@ -79,4 +75,6 @@ export default function EmailSubscribeModal({
       </div>
     </div>
   );
-}
+};
+
+export default EmailSubscribeModal;

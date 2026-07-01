@@ -6,14 +6,12 @@ export const metadata: Metadata = {
   description: 'GIRLSET — live feed'
 };
 
-export default function RootLayout({
-  children
-}: {
-  children: React.ReactNode;
-}) {
+const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en">
       <body className="bg-black text-white">{children}</body>
     </html>
   );
-}
+};
+
+export default RootLayout;

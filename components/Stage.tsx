@@ -17,7 +17,7 @@ type Props = {
   onCapture?: () => void;
 };
 
-export default function Stage({
+const Stage = ({
   source,
   onSourceChange,
   filter,
@@ -26,7 +26,7 @@ export default function Stage({
   nsfwFlagging,
   onCanvasReady,
   onCapture
-}: Props) {
+}: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageElRef = useRef<HTMLImageElement | null>(null);
@@ -105,27 +105,30 @@ export default function Stage({
     };
   }, [eyeBarEnabled, source]);
 
-  function applyFilter(ctx: CanvasRenderingContext2D) {
+  const applyFilter = (ctx: CanvasRenderingContext2D) => {
     ctx.filter =
       filter === 'bw'
         ? 'grayscale(1) contrast(1.1)'
         : filter === 'xray'
           ? 'grayscale(1) invert(1) contrast(1.2)'
           : 'none';
-  }
+  };
 
-  function drawEyeBar(
+  const drawEyeBar = (
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement
-  ) {
+  ) => {
     if (!eyeBarEnabled || !landmarkerRef.current || source !== 'camera') return;
+
     try {
       const result = landmarkerRef.current.detectForVideo(
         videoRef.current,
         performance.now()
       );
+
       const lm = result?.faceLandmarks?.[0];
       if (!lm) return;
+
       const leftEye = [33, 133];
       const rightEye = [362, 263];
       const xs = [...leftEye, ...rightEye].map(i => lm[i].x * canvas.width);
@@ -134,24 +137,27 @@ export default function Stage({
       const maxX = Math.max(...xs) + canvas.width * 0.06;
       const midY = (Math.min(...ys) + Math.max(...ys)) / 2;
       const barHeight = canvas.width * 0.045;
+
       ctx.fillStyle = '#000000';
       ctx.fillRect(minX, midY - barHeight / 2, maxX - minX, barHeight);
     } catch {
       // skip
     }
-  }
+  };
 
   useEffect(() => {
     if (source !== 'camera') return;
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let lastFlagCheck = 0;
 
-    function draw() {
+    const draw = () => {
       if (video!.readyState >= 2) {
         canvas!.width = video!.videoWidth;
         canvas!.height = video!.videoHeight;
@@ -165,13 +171,13 @@ export default function Stage({
         const now = performance.now();
         if (nsfwFlagging.enabled && now - lastFlagCheck > 4000) {
           lastFlagCheck = now;
-          checkFrameForFlag(canvas!, nsfwFlagging.threshold, anonNumber);
         }
       }
       rafRef.current = requestAnimationFrame(draw);
-    }
+    };
 
     draw();
+
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -179,14 +185,17 @@ export default function Stage({
 
   useEffect(() => {
     if (source !== 'image') return;
+
     const canvas = canvasRef.current;
     const img = imageElRef.current;
     if (!canvas || !img) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
+
     applyFilter(ctx);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     ctx.filter = 'none';
@@ -197,16 +206,18 @@ export default function Stage({
     return () => onCanvasReady?.(null);
   }, [onCanvasReady]);
 
-  function handleFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleFileChosen = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const img = new Image();
     img.onload = () => {
       imageElRef.current = img;
       onSourceChange('image');
     };
+
     img.src = URL.createObjectURL(file);
-  }
+  };
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
@@ -271,20 +282,6 @@ export default function Stage({
       )}
     </div>
   );
-}
+};
 
-// nsfwjs lator
-async function checkFrameForFlag(
-  _canvas: HTMLCanvasElement,
-  threshold: number,
-  anonNumber: number | null
-) {
-  const confidence = 0; // placeholder until i have time
-  if (confidence < threshold) return;
-
-  await supabase.from('flags').insert({
-    kind: 'webcam_nsfw',
-    anon_number: anonNumber,
-    confidence
-  });
-}
+export default Stage;

@@ -22,11 +22,7 @@ type DashboardData = {
   pinnedMessages: any[];
 };
 
-export default function AdminPanel({
-  initialData
-}: {
-  initialData: DashboardData;
-}) {
+const AdminPanel = ({ initialData }: { initialData: DashboardData }) => {
   const [links, setLinks] = useState(initialData.links);
   const [bannedWordsText, setBannedWordsText] = useState(
     initialData.bannedWords.join('\n')
@@ -237,4 +233,6 @@ export default function AdminPanel({
       </div>
     </div>
   );
-}
+};
+
+export default AdminPanel;
