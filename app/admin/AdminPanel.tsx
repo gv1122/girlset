@@ -1,34 +1,44 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
   saveLinks,
   saveBannedWords,
   saveFlagSettings,
   postOfficialMessage,
   togglePin,
-  resolveFlag,
-} from "@/app/admin/actions";
+  resolveFlag
+} from '@/app/admin/actions';
 
 type DashboardData = {
   links: { presave_url: string; subscribe_url: string };
   bannedWords: string[];
-  flagSettings: { webcam_nsfw_enabled: boolean; webcam_nsfw_threshold: number; chat_filter_enabled: boolean };
+  flagSettings: {
+    webcam_nsfw_enabled: boolean;
+    webcam_nsfw_threshold: number;
+    chat_filter_enabled: boolean;
+  };
   openFlags: any[];
   pinnedMessages: any[];
 };
 
-export default function AdminPanel({ initialData }: { initialData: DashboardData }) {
+export default function AdminPanel({
+  initialData
+}: {
+  initialData: DashboardData;
+}) {
   const [links, setLinks] = useState(initialData.links);
-  const [bannedWordsText, setBannedWordsText] = useState(initialData.bannedWords.join("\n"));
+  const [bannedWordsText, setBannedWordsText] = useState(
+    initialData.bannedWords.join('\n')
+  );
   const [flagSettings, setFlagSettings] = useState(initialData.flagSettings);
-  const [officialMsg, setOfficialMsg] = useState("");
+  const [officialMsg, setOfficialMsg] = useState('');
   const [pinIt, setPinIt] = useState(true);
-  const [savedNote, setSavedNote] = useState("");
+  const [savedNote, setSavedNote] = useState('');
 
   function flash(msg: string) {
     setSavedNote(msg);
-    setTimeout(() => setSavedNote(""), 1800);
+    setTimeout(() => setSavedNote(''), 1800);
   }
 
   return (
@@ -40,17 +50,21 @@ export default function AdminPanel({ initialData }: { initialData: DashboardData
         </div>
 
         <section className="space-y-2 border border-white/20 p-4">
-          <h2 className="text-xs tracking-widest text-white/50">LINKS (top bar buttons)</h2>
+          <h2 className="text-xs tracking-widest text-white/50">
+            LINKS (top bar buttons)
+          </h2>
           <label className="block text-xs text-white/40">Pre-Save URL</label>
           <input
             value={links.presave_url}
-            onChange={(e) => setLinks((l) => ({ ...l, presave_url: e.target.value }))}
+            onChange={e =>
+              setLinks(l => ({ ...l, presave_url: e.target.value }))
+            }
             className="w-full border border-white/30 bg-transparent px-2 py-1"
           />
           <button
             onClick={async () => {
               await saveLinks(links.presave_url, links.subscribe_url);
-              flash("links saved");
+              flash('links saved');
             }}
             className="border border-white px-3 py-1 text-xs hover:bg-white hover:text-black"
           >
@@ -59,25 +73,34 @@ export default function AdminPanel({ initialData }: { initialData: DashboardData
         </section>
 
         <section className="space-y-2 border border-white/20 p-4">
-          <h2 className="text-xs tracking-widest text-white/50">Blocked Words</h2>
-          <p className="text-xs text-white/40">Seperate by comma (word1 , word2 , word3)</p>
+          <h2 className="text-xs tracking-widest text-white/50">
+            Blocked Words
+          </h2>
+          <p className="text-xs text-white/40">
+            Seperate by comma (word1 , word2 , word3)
+          </p>
           <textarea
             value={bannedWordsText}
-            onChange={(e) => setBannedWordsText(e.target.value)}
+            onChange={e => setBannedWordsText(e.target.value)}
             rows={5}
             className="w-full border border-white/30 bg-transparent px-2 py-1"
           />
           <button
             onClick={async () => {
-              await saveBannedWords(bannedWordsText.split(",").map((w) => w.trim()).filter(Boolean));
-              flash("word list saved");
+              await saveBannedWords(
+                bannedWordsText
+                  .split(',')
+                  .map(w => w.trim())
+                  .filter(Boolean)
+              );
+              flash('word list saved');
             }}
             className="border border-white px-3 py-1 text-xs hover:bg-white hover:text-black"
           >
             SAVE WORD LIST
           </button>
         </section>
-{/* 
+        {/* 
         <section className="space-y-2 border border-white/20 p-4">
           <h2 className="text-xs tracking-widest text-white/50">FLAGGING OPTIONS</h2>
           <label className="flex items-center gap-2 text-xs">
@@ -123,22 +146,28 @@ export default function AdminPanel({ initialData }: { initialData: DashboardData
         </section> */}
 
         <section className="space-y-2 border border-white/20 p-4">
-          <h2 className="text-xs tracking-widest text-white/50">POST AS ANONYMOUS0 (official)</h2>
+          <h2 className="text-xs tracking-widest text-white/50">
+            POST AS ANONYMOUS0 (official)
+          </h2>
           <input
             value={officialMsg}
-            onChange={(e) => setOfficialMsg(e.target.value.slice(0, 60))}
+            onChange={e => setOfficialMsg(e.target.value.slice(0, 60))}
             placeholder="announcement... (60 char max)"
             className="w-full border border-white/30 bg-transparent px-2 py-1 text-chat"
           />
           <label className="flex items-center gap-2 text-xs">
-            <input type="checkbox" checked={pinIt} onChange={(e) => setPinIt(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={pinIt}
+              onChange={e => setPinIt(e.target.checked)}
+            />
             Pin this message
           </label>
           <button
             onClick={async () => {
               await postOfficialMessage(officialMsg, pinIt);
-              setOfficialMsg("");
-              flash("posted");
+              setOfficialMsg('');
+              flash('posted');
             }}
             className="border border-white px-3 py-1 text-xs hover:bg-white hover:text-black"
           >
@@ -147,17 +176,24 @@ export default function AdminPanel({ initialData }: { initialData: DashboardData
         </section>
 
         <section className="space-y-2 border border-white/20 p-4">
-          <h2 className="text-xs tracking-widest text-white/50">CURRENTLY PINNED</h2>
-          {initialData.pinnedMessages.length === 0 && <p className="text-xs text-white/30">none</p>}
-          {initialData.pinnedMessages.map((m) => (
-            <div key={m.id} className="flex items-center justify-between text-xs">
+          <h2 className="text-xs tracking-widest text-white/50">
+            CURRENTLY PINNED
+          </h2>
+          {initialData.pinnedMessages.length === 0 && (
+            <p className="text-xs text-white/30">none</p>
+          )}
+          {initialData.pinnedMessages.map(m => (
+            <div
+              key={m.id}
+              className="flex items-center justify-between text-xs"
+            >
               <span>
                 anonymous{m.anon_number}: {m.body}
               </span>
               <button
                 onClick={async () => {
                   await togglePin(m.id, false);
-                  flash("unpinned — refresh to update list");
+                  flash('unpinned — refresh to update list');
                 }}
                 className="border border-white/30 px-2 py-0.5 hover:border-white"
               >
@@ -166,7 +202,7 @@ export default function AdminPanel({ initialData }: { initialData: DashboardData
             </div>
           ))}
         </section>
-{/* 
+        {/* 
         <section className="space-y-2 border border-white/20 p-4">
           <h2 className="text-xs tracking-widest text-white/50">OPEN FLAGS ({initialData.openFlags.length})</h2>
           {initialData.openFlags.length === 0 && <p className="text-xs text-white/30">nothing pending</p>}

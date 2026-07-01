@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useCallback, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
-const STORAGE_KEY = "girlset_anon_number";
+const STORAGE_KEY = 'girlset_anon_number';
 
 export function useAnonIdentity() {
   const [anonNumber, setAnonNumber] = useState<number | null>(null);
@@ -21,9 +21,9 @@ export function useAnonIdentity() {
       return Number(cached);
     }
     setLoading(true);
-    const { data, error } = await supabase.rpc("claim_anon_number");
+    const { data, error } = await supabase.rpc('claim_anon_number');
     setLoading(false);
-    if (!error && typeof data === "number") {
+    if (!error && typeof data === 'number') {
       sessionStorage.setItem(STORAGE_KEY, String(data));
       setAnonNumber(data);
       return data;
@@ -31,5 +31,10 @@ export function useAnonIdentity() {
     return null;
   }, []);
 
-  return { anonNumber, displayName: anonNumber !== null ? `anonymous${anonNumber}` : null, loading, claim };
+  return {
+    anonNumber,
+    displayName: anonNumber !== null ? `anonymous${anonNumber}` : null,
+    loading,
+    claim
+  };
 }
