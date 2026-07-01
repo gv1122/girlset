@@ -1,4 +1,4 @@
-import { isAdmin, getDashboardData } from '@/lib/adminActions';
+import { isAdmin, getDashboardData } from '@/lib/admin';
 import AdminLogin from '@/app/admin/AdminLogin';
 import AdminPanel from '@/app/admin/AdminPanel';
 

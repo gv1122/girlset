@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+
 import {
   saveBannedWords,
   saveFlagSettings,
   postOfficialMessage,
-  resolveFlag
-} from '@/lib/adminActions';
-import { saveLinks, togglePin } from './actions';
+  resolveFlag,
+  togglePin,
+  saveLinks
+} from '@/app/admin/actions';
 
 type DashboardData = {
   links: { presave_url: string; subscribe_url: string };
