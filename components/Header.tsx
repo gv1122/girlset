@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
+
 import EmailSubscribeModal from '@/components/EmailSubscribeModal';
 
 const Header = ({
@@ -14,7 +16,13 @@ const Header = ({
   return (
     <header className="relative z-20 flex h-16 w-full items-center justify-between border-b border-white/10 bg-black px-6 font-mono">
       <div className="flex items-center gap-3">
-        <span className="text-xl tracking-[0.25em] text-white">GIRLSET</span>
+        <Image
+          src="/logo.jpg"
+          alt="GIRLSET"
+          width={100}
+          height={50}
+          className="h-14 w-auto"
+        />
         {presaveUrl && (
           <a
             href={presaveUrl}
@@ -25,7 +33,6 @@ const Header = ({
             Pre-Save the new song <span aria-hidden>→</span>
           </a>
         )}
-
         <button
           onClick={() => setShowSubscribe(true)}
           className="inline-flex items-center gap-2 bg-chat px-3 py-1.5 text-xs text-white hover:brightness-110 transition-[filter]"
