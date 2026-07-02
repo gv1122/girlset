@@ -70,3 +70,22 @@ export const resolveFlag = async (
 ) => {
   await supabaseAdmin.from('flags').update({ status }).eq('id', id);
 };
+
+export const clearChat = async () => {
+  await supabaseAdmin.from('messages').delete().neq('id', 0);
+};
+
+export const exportSubscribers = async (): Promise<string> => {
+  const { data } = await supabaseAdmin
+    .from('subscribers')
+    .select('email, country, opted_in_at')
+    .order('opted_in_at', { ascending: true });
+
+  if (!data || data.length === 0) return 'email,country,opted_in_at\n';
+
+  const header = 'email,country,opted_in_at';
+  const rows = data.map(
+    r => `${r.email},${r.country ?? ''},${r.opted_in_at ?? ''}`
+  );
+  return [header, ...rows].join('\n');
+};

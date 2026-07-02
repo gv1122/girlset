@@ -97,3 +97,7 @@ create policy "anyone can subscribe"
 create policy "only service role can read subscribers"
   on subscribers for select
   using (auth.role() = 'service_role');
+
+alter table subscribers
+  add column if not exists country text,
+  add column if not exists opted_in_at timestamptz not null default now();

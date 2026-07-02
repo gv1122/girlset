@@ -141,30 +141,38 @@ const ChatBox = ({
         <div className="border-b border-chat/50 bg-white/5 px-2 py-1">
           {pinned.map(m => (
             <div key={m.id} className="text-white font-bold">
-              📌 anonymous{m.anon_number}:
+              📌 anonymous{m.anon_number}:{' '}
               <span className="font-normal text-chat">{m.body}</span>
             </div>
           ))}
         </div>
       )}
-
       <div ref={listRef} className="h-72 overflow-y-auto px-2 py-1.5 space-y-1">
-        {feed.map(m => (
-          <div key={m.id} className="break-words">
-            <span
-              className={
-                m.anon_number === 0
-                  ? 'text-chat font-bold'
-                  : 'text-white font-bold'
-              }
-            >
-              Anonymous{m.anon_number}:{' '}
-            </span>
-            <span className="text-chat">{m.body}</span>
+        {feed.length === 0 ? (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-center text-[10px] text-white/25 leading-relaxed">
+              no messages yet
+              <br />
+              be the first to say something
+            </p>
           </div>
-        ))}
+        ) : (
+          feed.map(m => (
+            <div key={m.id} className="break-words">
+              <span
+                className={
+                  m.anon_number === 0
+                    ? 'text-chat font-bold'
+                    : 'text-white font-bold'
+                }
+              >
+                Anonymous{m.anon_number}:{' '}
+              </span>
+              <span className="text-chat">{m.body}</span>
+            </div>
+          ))
+        )}
       </div>
-
       {!joined ? (
         <button
           onClick={onJoin}

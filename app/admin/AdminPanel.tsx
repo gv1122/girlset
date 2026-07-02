@@ -8,7 +8,9 @@ import {
   postOfficialMessage,
   resolveFlag,
   togglePin,
-  saveLinks
+  saveLinks,
+  clearChat,
+  exportSubscribers
 } from '@/app/admin/actions';
 
 type DashboardData = {
@@ -231,6 +233,56 @@ const AdminPanel = ({ initialData }: { initialData: DashboardData }) => {
             </div>
           ))}
         </section> */}
+
+        <section className="space-y-3 border border-red-900/50 p-4">
+          <h2 className="text-xs tracking-widest text-red-400/70">
+            careful ...
+          </h2>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs">Clear all chat messages</p>
+              <p className="text-[10px] text-white/30">
+                Permanently deletes every message. Cannot be undone.
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                if (
+                  !confirm('Delete ALL chat messages? This cannot be undone.')
+                )
+                  return;
+                await clearChat();
+                flash('chat cleared');
+              }}
+              className="border border-red-500/50 px-3 py-1 text-xs text-red-400 hover:border-red-400 hover:text-red-300"
+            >
+              CLEAR CHAT
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs">Export subscriber emails</p>
+              <p className="text-[10px] text-white/30">
+                Downloads a CSV with email, country, and opt-in timestamp.
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                const csv = await exportSubscribers();
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `girlset-subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+                a.click();
+              }}
+              className="border border-white/30 px-3 py-1 text-xs hover:border-white"
+            >
+              EXPORT CSV
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   );
