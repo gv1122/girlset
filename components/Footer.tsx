@@ -52,7 +52,6 @@ const Footer = ({
 }) => {
   return (
     <footer className="relative z-20 w-full bg-chat font-mono text-xs text-white">
-      {/* Mobile-only top row: mode switcher */}
       <div className="flex items-center justify-center gap-1 px-4 py-1.5 sm:hidden">
         {MODES.map(m => (
           <button
@@ -69,9 +68,7 @@ const Footer = ({
         ))}
       </div>
 
-      {/* Main row */}
       <div className="relative flex h-12 items-center justify-between px-4">
-        {/* Left: filters + eye */}
         <div className="flex items-center gap-2">
           {showMedia && (
             <>

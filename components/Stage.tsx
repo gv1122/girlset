@@ -70,10 +70,7 @@ const Stage = ({
   }, [source]);
 
   useEffect(() => {
-    if (!eyeBarEnabled || source !== 'camera') {
-      landmarkerRef.current = null;
-      return;
-    }
+    if (!eyeBarEnabled || source !== 'camera') return;
     let cancelled = false;
 
     (async () => {
@@ -162,23 +159,8 @@ const Stage = ({
 
     const draw = () => {
       if (video!.readyState >= 2) {
-        if (
-          canvas!.width !== video!.videoWidth ||
-          canvas!.height !== video!.videoHeight
-        ) {
-          canvas!.width = video!.videoWidth;
-          canvas!.height = video!.videoHeight;
-        }
-
-        if (
-          canvas!.width !== video!.videoWidth ||
-          canvas!.height !== video!.videoHeight
-        ) {
-          const maxW = window.innerWidth < 640 ? 640 : 1280;
-          const scale = Math.min(1, maxW / video!.videoWidth);
-          canvas!.width = Math.floor(video!.videoWidth * scale);
-          canvas!.height = Math.floor(video!.videoHeight * scale);
-        }
+        canvas!.width = video!.videoWidth;
+        canvas!.height = video!.videoHeight;
 
         applyFilter(ctx!);
         ctx!.drawImage(video!, 0, 0, canvas!.width, canvas!.height);
@@ -191,20 +173,13 @@ const Stage = ({
           lastFlagCheck = now;
         }
       }
-      const fps = window.innerWidth < 640 ? 15 : 30;
-      rafRef.current = setTimeout(
-        () => requestAnimationFrame(draw),
-        1000 / fps
-      ) as unknown as number;
+      rafRef.current = requestAnimationFrame(draw);
     };
 
     draw();
 
     return () => {
-      if (rafRef.current) {
-        clearTimeout(rafRef.current);
-        cancelAnimationFrame(rafRef.current);
-      }
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [source, filter, eyeBarEnabled, nsfwFlagging, anonNumber]);
 
