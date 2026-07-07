@@ -1,13 +1,17 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
+
 import { supabase } from '@/lib/supabaseClient';
 import { useAnonIdentity } from '@/lib/useAnonIdentity';
 import Header from '@/components/Header';
 import CornerBrackets from '@/components/CornerBrackets';
 import Stage, { FilterMode, StageSource } from '@/components/Stage';
-import ChatBox from '@/components/ChatBox';
 import Footer, { SiteMode } from '@/components/Footer';
+import ErrorBoundary from '@/components/ErrorBoundary';
+
+const ChatBox = dynamic(() => import('@/components/ChatBox'), { ssr: false });
 
 const Home = () => {
   const {
@@ -32,29 +36,56 @@ const Home = () => {
   });
 
   const handleCapture = async () => {
-    if (!stageContainerRef.current) return;
-    const html2canvas = (await import('html2canvas')).default;
-    const shot = await html2canvas(stageContainerRef.current, {
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#000000',
-      scale: 1
-    });
-    const dataUrl = shot.toDataURL('image/png');
-    if (navigator.share && navigator.canShare) {
-      try {
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], 'girlset.png', { type: 'image/png' });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'GIRLSET' });
-          return;
-        }
-      } catch {}
+    const isMobileDevice = window.innerWidth < 640;
+
+    if (isMobileDevice) {
+      if (!canvas) return;
+
+      const dataUrl = canvas.toDataURL('image/png');
+
+      if (navigator.share && navigator.canShare) {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], 'girlset.png', { type: 'image/png' });
+
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'GIRLSET' });
+            return;
+          }
+        } catch {}
+      }
+
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'girlset.png';
+      a.click();
+
+      return;
     }
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    a.download = 'girlset.png';
-    a.click();
+
+    if (!stageContainerRef.current) return;
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const shot = await html2canvas(stageContainerRef.current, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#000000',
+        scale: 1
+      });
+      const dataUrl = shot.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'girlset.png';
+      a.click();
+    } catch {
+      if (!canvas) return;
+
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'girlset.png';
+      a.click();
+    }
   };
 
   useEffect(() => {
@@ -75,51 +106,69 @@ const Home = () => {
   const showChat = mode !== 'webcam';
 
   return (
-    <main className="flex h-screen w-screen flex-col overflow-hidden bg-black">
-      <Header presaveUrl={links.presave_url} />
-      <div ref={stageContainerRef} className="relative flex-1 min-h-0">
-        <CornerBrackets />
-        {showMedia ? (
-          <Stage
-            source={source}
-            onSourceChange={setSource}
-            filter={filter}
-            eyeBarEnabled={eyeBarOn}
-            anonNumber={anonNumber}
-            nsfwFlagging={{
-              enabled: flagSettings.webcam_nsfw_enabled,
-              threshold: flagSettings.webcam_nsfw_threshold
-            }}
-            onCanvasReady={setCanvas}
-            onCapture={handleCapture}
-          />
-        ) : (
-          <div className="absolute inset-0 bg-black" />
-        )}
-        {showChat && (
-          <ChatBox
-            anonNumber={anonNumber}
-            displayName={displayName}
-            bannedWords={bannedWords}
-            onJoin={claim}
-            joining={claiming}
-          />
-        )}
-      </div>
+    <ErrorBoundary>
+      <main className="flex h-dvh w-screen flex-col overflow-hidden bg-black">
+        <Header presaveUrl={links.presave_url} />
+        <div ref={stageContainerRef} className="relative flex-1 min-h-0">
+          <CornerBrackets />
+          {showMedia ? (
+            <Stage
+              source={source}
+              onSourceChange={setSource}
+              filter={filter}
+              eyeBarEnabled={eyeBarOn}
+              anonNumber={anonNumber}
+              nsfwFlagging={{
+                enabled: flagSettings.webcam_nsfw_enabled,
+                threshold: flagSettings.webcam_nsfw_threshold
+              }}
+              onCanvasReady={setCanvas}
+              onCapture={handleCapture}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-black" />
+          )}
+          {showChat && (
+            <div className="hidden sm:contents">
+              <ChatBox
+                anonNumber={anonNumber}
+                displayName={displayName}
+                bannedWords={bannedWords}
+                onJoin={claim}
+                joining={claiming}
+                mobile={false}
+              />
+            </div>
+          )}
+        </div>
 
-      <Footer
-        showMedia={showMedia}
-        filter={filter}
-        onFilter={setFilter}
-        mode={mode}
-        onMode={setMode}
-        canvas={showMedia ? canvas : null}
-        showEyeBarToggle={showMedia}
-        eyeBarOn={eyeBarOn}
-        onEyeBarToggle={() => setEyeBarOn(v => !v)}
-        sourceSelected={source !== 'idle'}
-      />
-    </main>
+        {showChat && (
+          <div className="sm:hidden shrink-0">
+            <ChatBox
+              anonNumber={anonNumber}
+              displayName={displayName}
+              bannedWords={bannedWords}
+              onJoin={claim}
+              joining={claiming}
+              mobile={true}
+            />
+          </div>
+        )}
+
+        <Footer
+          showMedia={showMedia}
+          filter={filter}
+          onFilter={setFilter}
+          mode={mode}
+          onMode={setMode}
+          canvas={showMedia ? canvas : null}
+          showEyeBarToggle={showMedia}
+          eyeBarOn={eyeBarOn}
+          onEyeBarToggle={() => setEyeBarOn(v => !v)}
+          sourceSelected={source !== 'idle'}
+        />
+      </main>
+    </ErrorBoundary>
   );
 };
 

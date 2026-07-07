@@ -18,13 +18,15 @@ const ChatBox = ({
   displayName,
   bannedWords,
   onJoin,
-  joining
+  joining,
+  mobile = false
 }: {
   anonNumber: number | null;
   displayName: string | null;
   bannedWords: string[];
   onJoin: () => void;
   joining: boolean;
+  mobile?: boolean;
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState('');
@@ -35,41 +37,51 @@ const ChatBox = ({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    try {
-      posRef.current = { x: window.innerWidth - 320 - 24, y: 88 };
-    } catch {
-      posRef.current = { x: 24, y: 88 };
+    if (!mobile) {
+      try {
+        posRef.current = { x: window.innerWidth - 320 - 24, y: 88 };
+      } catch {
+        posRef.current = { x: 24, y: 88 };
+      }
     }
     setReady(true);
   }, []);
 
   useEffect(() => {
-    if (ready && containerRef.current) {
+    if (ready && !mobile && containerRef.current) {
       containerRef.current.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px)`;
     }
-  }, [ready]);
+  }, [ready, mobile]);
 
   useEffect(() => {
+    let active = true;
+
     supabase
       .from('messages')
       .select('*')
       .order('created_at', { ascending: true })
       .limit(200)
-      .then(({ data }) => data && setMessages(data as Message[]));
+      .then(({ data }) => {
+        if (active && data) setMessages(data as Message[]);
+      });
 
+    const channelName = `messages-feed-${Math.random()}`;
     const channel = supabase
-      .channel('messages-feed')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         payload => {
-          setMessages(prev => [...prev, payload.new as Message]);
+          if (active) setMessages(prev => [...prev, payload.new as Message]);
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (err) console.warn('Realtime subscription error:', err);
+      });
 
     return () => {
-      supabase.removeChannel(channel);
+      active = false;
+      supabase.removeChannel(channel).catch(() => {});
     };
   }, []);
 
@@ -78,6 +90,8 @@ const ChatBox = ({
   }, [messages]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (mobile) return;
+
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     dragOffset.current = {
       x: e.clientX - posRef.current.x,
@@ -85,7 +99,7 @@ const ChatBox = ({
     };
   };
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragOffset.current || !containerRef.current) return;
+    if (mobile || !dragOffset.current || !containerRef.current) return;
     posRef.current = {
       x: e.clientX - dragOffset.current.x,
       y: e.clientY - dragOffset.current.y
@@ -118,6 +132,86 @@ const ChatBox = ({
   const joined = anonNumber !== null;
 
   if (!ready) return null;
+
+  if (mobile) {
+    return (
+      <div className="flex flex-col border-t border-chat bg-black/60 font-mono text-xs">
+        <div className="flex items-center justify-between bg-chat px-3 py-1.5 select-none">
+          <span className="text-white text-xs tracking-wide">CHAT</span>
+          <span className="h-2 w-2 rounded-full bg-white animate-blink" />
+        </div>
+        {pinned.length > 0 && (
+          <div className="border-b border-chat/50 bg-white/5 px-2 py-1">
+            {pinned.map(m => (
+              <div key={m.id} className="text-white font-bold">
+                📌 anonymous{m.anon_number}:{' '}
+                <span className="font-normal text-chat">{m.body}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div
+          ref={listRef}
+          className="h-36 overflow-y-auto px-2 py-1.5 space-y-1"
+        >
+          {feed.length === 0 ? (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-center text-[10px] text-white/25 leading-relaxed">
+                no messages yet
+                <br />
+                be the first to say something
+              </p>
+            </div>
+          ) : (
+            feed.map(m => (
+              <div key={m.id} className="break-words">
+                <span
+                  className={
+                    m.anon_number === 0
+                      ? 'text-chat font-bold'
+                      : 'text-white font-bold'
+                  }
+                >
+                  anonymous{m.anon_number}:{' '}
+                </span>
+                <span className="text-chat">{m.body}</span>
+              </div>
+            ))
+          )}
+        </div>
+        {!joined ? (
+          <button
+            onClick={onJoin}
+            disabled={joining}
+            className="flex items-center justify-between bg-chat px-3 py-2 text-xs text-white hover:brightness-110 disabled:opacity-60"
+          >
+            {joining ? 'joining...' : 'Login to join the chat'}{' '}
+            <span aria-hidden>→</span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-1.5 border-t border-chat/50 p-1.5">
+            <input
+              value={draft}
+              onChange={e => setDraft(e.target.value.slice(0, CHAT_CHAR_LIMIT))}
+              onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              placeholder="Type here"
+              className="flex-1 bg-transparent text-chat placeholder:text-white/30 outline-none"
+            />
+            <span className="text-[10px] text-white/40">
+              {draft.length}/{CHAT_CHAR_LIMIT}
+            </span>
+            <button
+              onClick={sendMessage}
+              className="bg-chat px-2 py-1 text-white hover:brightness-110"
+              aria-label="send"
+            >
+              →
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -170,7 +264,7 @@ const ChatBox = ({
                     : 'text-white font-bold'
                 }
               >
-                Anonymous{m.anon_number}:{' '}
+                anonymous{m.anon_number}:{' '}
               </span>
               <span className="text-chat">{m.body}</span>
             </div>
