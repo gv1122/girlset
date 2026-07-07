@@ -124,7 +124,7 @@ const Home = () => {
     <ErrorBoundary>
       <main className="flex h-dvh w-screen flex-col overflow-hidden bg-black">
         <Header presaveUrl={links.presave_url} />
-        <div ref={stageContainerRef} className="relative flex-1 min-h-0">
+        {/* <div ref={stageContainerRef} className="relative flex-1 min-h-0">
           <CornerBrackets />
           {showMedia ? (
             <Stage
@@ -181,7 +181,7 @@ const Home = () => {
           eyeBarOn={eyeBarOn}
           onEyeBarToggle={() => setEyeBarOn(v => !v)}
           sourceSelected={source !== 'idle'}
-        />
+        /> */}
       </main>
     </ErrorBoundary>
   );
