@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAnonIdentity } from '@/lib/useAnonIdentity';
 import Header from '@/components/Header';
 import CornerBrackets from '@/components/CornerBrackets';
-import Stage, { FilterMode, StageSource } from '@/components/Stage';
+// import Stage, { FilterMode, StageSource } from '@/components/Stage';
 import Footer, { SiteMode } from '@/components/Footer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -22,9 +22,9 @@ const Home = () => {
   } = useAnonIdentity();
 
   const [mode, setMode] = useState<SiteMode>('webcam_chat');
-  const [source, setSource] = useState<StageSource>('idle');
-  const [eyeBarOn, setEyeBarOn] = useState(false);
-  const [filter, setFilter] = useState<FilterMode>('normal');
+  //   const [source, setSource] = useState<StageSource>('idle');
+  //   const [eyeBarOn, setEyeBarOn] = useState(false);
+  //   const [filter, setFilter] = useState<FilterMode>('normal');
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const stageContainerRef = useRef<HTMLDivElement>(null);
 
