@@ -162,8 +162,23 @@ const Stage = ({
 
     const draw = () => {
       if (video!.readyState >= 2) {
-        canvas!.width = video!.videoWidth;
-        canvas!.height = video!.videoHeight;
+        if (
+          canvas!.width !== video!.videoWidth ||
+          canvas!.height !== video!.videoHeight
+        ) {
+          canvas!.width = video!.videoWidth;
+          canvas!.height = video!.videoHeight;
+        }
+
+        if (
+          canvas!.width !== video!.videoWidth ||
+          canvas!.height !== video!.videoHeight
+        ) {
+          const maxW = window.innerWidth < 640 ? 640 : 1280;
+          const scale = Math.min(1, maxW / video!.videoWidth);
+          canvas!.width = Math.floor(video!.videoWidth * scale);
+          canvas!.height = Math.floor(video!.videoHeight * scale);
+        }
 
         applyFilter(ctx!);
         ctx!.drawImage(video!, 0, 0, canvas!.width, canvas!.height);
@@ -176,13 +191,20 @@ const Stage = ({
           lastFlagCheck = now;
         }
       }
-      rafRef.current = requestAnimationFrame(draw);
+      const fps = window.innerWidth < 640 ? 15 : 30;
+      rafRef.current = setTimeout(
+        () => requestAnimationFrame(draw),
+        1000 / fps
+      ) as unknown as number;
     };
 
     draw();
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) {
+        clearTimeout(rafRef.current);
+        cancelAnimationFrame(rafRef.current);
+      }
     };
   }, [source, filter, eyeBarEnabled, nsfwFlagging, anonNumber]);
 
