@@ -145,7 +145,9 @@ const ChatBox = ({
             {pinned.map(m => (
               <div key={m.id} className="text-white font-bold">
                 📌 anonymous{m.anon_number}:{' '}
-                <span className="font-normal text-chat">{m.body}</span>
+                <span className="font-normal text-chat text-pink-500">
+                  {m.body}
+                </span>
               </div>
             ))}
           </div>
@@ -174,7 +176,7 @@ const ChatBox = ({
                 >
                   anonymous{m.anon_number}:{' '}
                 </span>
-                <span className="text-chat">{m.body}</span>
+                <span className="text-chat text-green-500">{m.body}</span>
               </div>
             ))
           )}
@@ -240,7 +242,7 @@ const ChatBox = ({
           {pinned.map(m => (
             <div key={m.id} className="text-white font-bold">
               📌 anonymous{m.anon_number}:{' '}
-              <span className="font-normal text-chat">{m.body}</span>
+              <span className="font-normal text-chat text-pink-500">{m.body}</span>
             </div>
           ))}
         </div>
@@ -266,7 +268,7 @@ const ChatBox = ({
               >
                 anonymous{m.anon_number}:{' '}
               </span>
-              <span className="text-chat">{m.body}</span>
+              <span className="text-chat text-green-500">{m.body}</span>
             </div>
           ))
         )}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
+import Image from 'next/image';
 import EmailSubscribeModal from '@/components/EmailSubscribeModal';
 
 export default function Header({
@@ -19,9 +19,7 @@ export default function Header({
         <img
           src="/logo.png"
           alt="GIRLSET"
-          width={100}
-          height={50}
-          className="h-10 sm:h-14 w-auto shrink-0"
+          className="block h-12 w-auto shrink-0"
         />
 
         {presaveUrl && (
