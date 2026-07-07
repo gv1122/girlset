@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAnonIdentity } from '@/lib/useAnonIdentity';
 import Header from '@/components/Header';
 import CornerBrackets from '@/components/CornerBrackets';
-// import Stage, { FilterMode, StageSource } from '@/components/Stage';
+import Stage, { FilterMode, StageSource } from '@/components/Stage';
 import Footer, { SiteMode } from '@/components/Footer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -22,9 +22,9 @@ const Home = () => {
   } = useAnonIdentity();
 
   const [mode, setMode] = useState<SiteMode>('webcam_chat');
-  //   const [source, setSource] = useState<StageSource>('idle');
-  //   const [eyeBarOn, setEyeBarOn] = useState(false);
-  //   const [filter, setFilter] = useState<FilterMode>('normal');
+  const [source, setSource] = useState<StageSource>('idle');
+  const [eyeBarOn, setEyeBarOn] = useState(false);
+  const [filter, setFilter] = useState<FilterMode>('normal');
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const stageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -34,21 +34,6 @@ const Home = () => {
     webcam_nsfw_enabled: true,
     webcam_nsfw_threshold: 0.75
   });
-
-  useEffect(() => {
-    const handler = (e: ErrorEvent) => {
-      document.body.innerHTML = `<div style="position:fixed;inset:0;background:#000;color:#f00;font-family:monospace;font-size:12px;padding:20px;overflow:auto;z-index:99999;white-space:pre-wrap;">${e.message}\n\n${e.filename}:${e.lineno}\n\n${e.error?.stack ?? ''}</div>`;
-    };
-    const unhandled = (e: PromiseRejectionEvent) => {
-      document.body.innerHTML = `<div style="position:fixed;inset:0;background:#000;color:#f00;font-family:monospace;font-size:12px;padding:20px;overflow:auto;z-index:99999;white-space:pre-wrap;">UNHANDLED REJECTION\n\n${e.reason?.stack ?? e.reason}</div>`;
-    };
-    window.addEventListener('error', handler);
-    window.addEventListener('unhandledrejection', unhandled);
-    return () => {
-      window.removeEventListener('error', handler);
-      window.removeEventListener('unhandledrejection', unhandled);
-    };
-  }, []);
 
   const handleCapture = async () => {
     const isMobileDevice = window.innerWidth < 640;
@@ -124,7 +109,7 @@ const Home = () => {
     <ErrorBoundary>
       <main className="flex h-dvh w-screen flex-col overflow-hidden bg-black">
         <Header presaveUrl={links.presave_url} />
-        {/* <div ref={stageContainerRef} className="relative flex-1 min-h-0">
+        <div ref={stageContainerRef} className="relative flex-1 min-h-0">
           <CornerBrackets />
           {showMedia ? (
             <Stage
@@ -181,7 +166,7 @@ const Home = () => {
           eyeBarOn={eyeBarOn}
           onEyeBarToggle={() => setEyeBarOn(v => !v)}
           sourceSelected={source !== 'idle'}
-        /> */}
+        />
       </main>
     </ErrorBoundary>
   );

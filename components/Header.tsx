@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+
 import EmailSubscribeModal from '@/components/EmailSubscribeModal';
 
 export default function Header({
@@ -16,7 +16,7 @@ export default function Header({
   return (
     <header className="relative z-20 flex h-14 w-full items-center justify-between border-b border-white/10 bg-black px-3 sm:px-6 font-mono">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        <Image
+        <img
           src="/logo.jpg"
           alt="GIRLSET"
           width={100}
