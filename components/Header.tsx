@@ -17,7 +17,7 @@ export default function Header({
     <header className="relative z-20 flex h-14 w-full items-center justify-between border-b border-white/10 bg-black px-3 sm:px-6 font-mono">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <img
-          src="/logo.jpg"
+          src="/logo.png"
           alt="GIRLSET"
           width={100}
           height={50}
