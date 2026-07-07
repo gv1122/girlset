@@ -70,7 +70,10 @@ const Stage = ({
   }, [source]);
 
   useEffect(() => {
-    if (!eyeBarEnabled || source !== 'camera') return;
+    if (!eyeBarEnabled || source !== 'camera') {
+      landmarkerRef.current = null;
+      return;
+    }
     let cancelled = false;
 
     (async () => {
@@ -105,13 +108,33 @@ const Stage = ({
     };
   }, [eyeBarEnabled, source]);
 
-  const applyFilter = (ctx: CanvasRenderingContext2D) => {
-    ctx.filter =
-      filter === 'bw'
-        ? 'grayscale(1) contrast(1.1)'
-        : filter === 'xray'
-          ? 'grayscale(1) invert(1) contrast(1.2)'
-          : 'none';
+  const applyFilter = (
+    ctx: CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement
+  ) => {
+    if (filter === 'normal') return;
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = imageData.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i],
+        g = d[i + 1],
+        b = d[i + 2];
+
+      if (filter === 'bw') {
+        // Weighted greyscale (matches human luminance perception)
+        const grey = r * 0.299 + g * 0.587 + b * 0.114;
+        d[i] = d[i + 1] = d[i + 2] = grey;
+      } else if (filter === 'xray') {
+        // Greyscale then invert
+        const grey = r * 0.299 + g * 0.587 + b * 0.114;
+        const inv = 255 - grey;
+        d[i] = d[i + 1] = d[i + 2] = inv;
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
   };
 
   const drawEyeBar = (
@@ -162,9 +185,8 @@ const Stage = ({
         canvas!.width = video!.videoWidth;
         canvas!.height = video!.videoHeight;
 
-        applyFilter(ctx!);
         ctx!.drawImage(video!, 0, 0, canvas!.width, canvas!.height);
-        ctx!.filter = 'none';
+        applyFilter(ctx!, canvas!);
 
         drawEyeBar(ctx!, canvas!);
 
@@ -196,9 +218,8 @@ const Stage = ({
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
 
-    applyFilter(ctx);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    ctx.filter = 'none';
+    applyFilter(ctx, canvas);
   }, [source, filter]);
 
   useEffect(() => {

@@ -19,7 +19,7 @@ export default function Header({
         <img
           src="/logo.png"
           alt="GIRLSET"
-          className="block h-12 w-auto shrink-0"
+          className="block h-10 w-auto shrink-0"
         />
 
         {presaveUrl && (
