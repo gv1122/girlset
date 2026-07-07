@@ -35,6 +35,21 @@ const Home = () => {
     webcam_nsfw_threshold: 0.75
   });
 
+  useEffect(() => {
+    const handler = (e: ErrorEvent) => {
+      document.body.innerHTML = `<div style="position:fixed;inset:0;background:#000;color:#f00;font-family:monospace;font-size:12px;padding:20px;overflow:auto;z-index:99999;white-space:pre-wrap;">${e.message}\n\n${e.filename}:${e.lineno}\n\n${e.error?.stack ?? ''}</div>`;
+    };
+    const unhandled = (e: PromiseRejectionEvent) => {
+      document.body.innerHTML = `<div style="position:fixed;inset:0;background:#000;color:#f00;font-family:monospace;font-size:12px;padding:20px;overflow:auto;z-index:99999;white-space:pre-wrap;">UNHANDLED REJECTION\n\n${e.reason?.stack ?? e.reason}</div>`;
+    };
+    window.addEventListener('error', handler);
+    window.addEventListener('unhandledrejection', unhandled);
+    return () => {
+      window.removeEventListener('error', handler);
+      window.removeEventListener('unhandledrejection', unhandled);
+    };
+  }, []);
+
   const handleCapture = async () => {
     const isMobileDevice = window.innerWidth < 640;
 
