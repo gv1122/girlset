@@ -70,7 +70,10 @@ const Stage = ({
   }, [source]);
 
   useEffect(() => {
-    if (!eyeBarEnabled || source !== 'camera') return;
+    if (!eyeBarEnabled || source !== 'camera') {
+      landmarkerRef.current = null;
+      return;
+    }
     let cancelled = false;
 
     (async () => {

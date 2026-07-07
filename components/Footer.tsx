@@ -27,12 +27,12 @@ const SOCIALS = [
   },
   {
     key: 'instagram',
-    href: 'https://www.instagram.com/',
+    href: 'https://www.instagram.com/girlset/',
     icon: FaInstagram
   },
   {
     key: 'tiktok',
-    href: 'https://www.tiktok.com/',
+    href: 'https://www.tiktok.com/@girlset',
     icon: FaTiktok
   }
 ];
@@ -98,7 +98,7 @@ const Footer = ({
         )}
       </div>
 
-      <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 gap-1 sm:flex">
+      <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 gap-1">
         {MODES.map(m => (
           <button
             key={m.key}

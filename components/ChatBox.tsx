@@ -35,7 +35,11 @@ const ChatBox = ({
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    posRef.current = { x: window.innerWidth - 320 - 24, y: 88 };
+    try {
+      posRef.current = { x: window.innerWidth - 320 - 24, y: 88 };
+    } catch {
+      posRef.current = { x: 24, y: 88 };
+    }
     setReady(true);
   }, []);
 

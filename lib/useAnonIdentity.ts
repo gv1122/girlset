@@ -10,21 +10,27 @@ export const useAnonIdentity = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const cached = sessionStorage.getItem(STORAGE_KEY);
-    if (cached) setAnonNumber(Number(cached));
+    try {
+      const cached = sessionStorage.getItem(STORAGE_KEY);
+      if (cached) setAnonNumber(Number(cached));
+    } catch {}
   }, []);
 
   const claim = useCallback(async () => {
-    const cached = sessionStorage.getItem(STORAGE_KEY);
-    if (cached) {
-      setAnonNumber(Number(cached));
-      return Number(cached);
-    }
+    try {
+      const cached = sessionStorage.getItem(STORAGE_KEY);
+      if (cached) {
+        setAnonNumber(Number(cached));
+        return Number(cached);
+      }
+    } catch {}
     setLoading(true);
     const { data, error } = await supabase.rpc('claim_anon_number');
     setLoading(false);
     if (!error && typeof data === 'number') {
-      sessionStorage.setItem(STORAGE_KEY, String(data));
+      try {
+        sessionStorage.setItem(STORAGE_KEY, String(data));
+      } catch {}
       setAnonNumber(data);
       return data;
     }
