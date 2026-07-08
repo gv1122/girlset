@@ -36,10 +36,16 @@ const Home = () => {
   });
 
   const handleCapture = async () => {
+    alert('Capture button clicked');
+
     const isMobileDevice = window.innerWidth < 640;
 
     try {
+      alert('1');
+
       const html2canvas = (await import('html2canvas')).default;
+
+      alert('2');
 
       if (!stageContainerRef.current) return;
 
@@ -47,9 +53,14 @@ const Home = () => {
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#000000',
+        // Half scale on mobile to avoid GPU memory OOM.
+        // Still captures both the camera feed and the chat overlay.
         scale: isMobileDevice ? 0.5 : 1,
+        // Skip decorative elements
         ignoreElements: el => el.hasAttribute('data-html2canvas-ignore')
       });
+
+      alert('3');
 
       const dataUrl = shot.toDataURL('image/png');
 
@@ -61,7 +72,9 @@ const Home = () => {
             await navigator.share({ files: [file], title: 'GIRLSET' });
             return;
           }
-        } catch {}
+        } catch (error) {
+          alert('Error sharing: ' + error);
+        }
       }
 
       const a = document.createElement('a');
@@ -80,7 +93,9 @@ const Home = () => {
             await navigator.share({ files: [file], title: 'GIRLSET' });
             return;
           }
-        } catch {}
+        } catch (error) {
+          alert('Error sharing: ' + error);
+        }
       }
 
       const a = document.createElement('a');
@@ -90,19 +105,58 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    supabase
-      .from('admin_settings')
-      .select('key, value')
-      .then(({ data }) => {
-        if (!data) return;
-        for (const row of data) {
-          if (row.key === 'links') setLinks(row.value);
-          if (row.key === 'banned_words') setBannedWords(row.value ?? []);
-          if (row.key === 'flag_settings') setFlagSettings(row.value);
-        }
-      });
-  }, []);
+  //   const handleCapture = async () => {
+  //     const isMobileDevice = window.innerWidth < 640;
+
+  //     if (isMobileDevice) {
+  //       if (!canvas) return;
+
+  //       const dataUrl = canvas.toDataURL('image/png');
+
+  //       if (navigator.share && navigator.canShare) {
+  //         try {
+  //           const blob = await (await fetch(dataUrl)).blob();
+  //           const file = new File([blob], 'girlset.png', { type: 'image/png' });
+
+  //           if (navigator.canShare({ files: [file] })) {
+  //             await navigator.share({ files: [file], title: 'GIRLSET' });
+  //             return;
+  //           }
+  //         } catch {}
+  //       }
+
+  //       const a = document.createElement('a');
+  //       a.href = dataUrl;
+  //       a.download = 'girlset.png';
+  //       a.click();
+
+  //       return;
+  //     }
+
+  //     if (!stageContainerRef.current) return;
+
+  //     try {
+  //       const html2canvas = (await import('html2canvas')).default;
+  //       const shot = await html2canvas(stageContainerRef.current, {
+  //         useCORS: true,
+  //         allowTaint: true,
+  //         backgroundColor: '#000000',
+  //         scale: 1
+  //       });
+  //       const dataUrl = shot.toDataURL('image/png');
+  //       const a = document.createElement('a');
+  //       a.href = dataUrl;
+  //       a.download = 'girlset.png';
+  //       a.click();
+  //     } catch {
+  //       if (!canvas) return;
+
+  //       const a = document.createElement('a');
+  //       a.href = canvas.toDataURL('image/png');
+  //       a.download = 'girlset.png';
+  //       a.click();
+  //     }
+  //   };
 
   const showMedia = mode !== 'chat';
   const showChat = mode !== 'webcam';
@@ -145,7 +199,6 @@ const Home = () => {
             </div>
           )}
 
-          {/* Mobile: anchored to bottom, still inside the capture area */}
           {showChat && (
             <div className="absolute bottom-0 left-0 right-0 sm:hidden">
               <ChatBox

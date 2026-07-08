@@ -197,7 +197,7 @@ const ChatBox = ({
               onChange={e => setDraft(e.target.value.slice(0, CHAT_CHAR_LIMIT))}
               onKeyDown={e => e.key === 'Enter' && sendMessage()}
               placeholder="Type here"
-              className="flex-1 bg-transparent text-chat placeholder:text-white/30 outline-none"
+              className="flex-1 bg-transparent text-chat placeholder:text-white/30 text-green-500 outline-none"
             />
             <span className="text-[10px] text-white/40">
               {draft.length}/{CHAT_CHAR_LIMIT}
