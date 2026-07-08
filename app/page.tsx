@@ -68,6 +68,13 @@ const Home = () => {
         try {
           const blob = await (await fetch(dataUrl)).blob();
           const file = new File([blob], 'girlset.png', { type: 'image/png' });
+
+          alert({
+            canShare: navigator.canShare?.({ files: [file] }),
+            fileSize: file.size,
+            type: file.type
+          });
+
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({ files: [file], title: 'GIRLSET' });
             return;
@@ -94,7 +101,7 @@ const Home = () => {
             return;
           }
         } catch (error) {
-          alert('Error sharing: ' + error);
+          alert('Error sharing in second catch: ' + error);
         }
       }
 
