@@ -56,27 +56,79 @@ const ChatBox = ({
   useEffect(() => {
     let active = true;
 
-    supabase
-      .from('messages')
-      .select('*')
-      .order('created_at', { ascending: true })
-      .limit(200)
-      .then(({ data }) => {
-        if (active && data) setMessages(data as Message[]);
-      });
+    const loadMessages = async () => {
+      const [pinnedResult, feedResult] = await Promise.all([
+        supabase
+          .from('messages')
+          .select('*')
+          .eq('is_pinned', true)
+          .order('created_at', { ascending: true }),
+
+        supabase
+          .from('messages')
+          .select('*')
+          .eq('is_pinned', false)
+          .order('created_at', { ascending: true })
+          .limit(200)
+      ]);
+
+      if (!active) return;
+
+      if (pinnedResult.error) {
+        console.warn('Pinned messages error:', pinnedResult.error);
+      }
+
+      if (feedResult.error) {
+        console.warn('Feed messages error:', feedResult.error);
+      }
+
+      setMessages([
+        ...(pinnedResult.data ?? []),
+        ...(feedResult.data ?? [])
+      ] as Message[]);
+    };
+
+    loadMessages();
 
     const channelName = `messages-feed-${Math.random()}`;
+
     const channel = supabase
       .channel(channelName)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages'
+        },
         payload => {
-          if (active) setMessages(prev => [...prev, payload.new as Message]);
+          if (!active) return;
+
+          if (payload.eventType === 'INSERT') {
+            setMessages(prev => [...prev, payload.new as Message]);
+          }
+
+          if (payload.eventType === 'UPDATE') {
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === (payload.new as Message).id
+                  ? (payload.new as Message)
+                  : m
+              )
+            );
+          }
+
+          if (payload.eventType === 'DELETE') {
+            setMessages(prev =>
+              prev.filter(m => m.id !== (payload.old as Message).id)
+            );
+          }
         }
       )
       .subscribe((status, err) => {
-        if (err) console.warn('Realtime subscription error:', err);
+        if (err) {
+          console.warn('Realtime subscription error:', err);
+        }
       });
 
     return () => {
