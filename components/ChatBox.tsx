@@ -135,7 +135,7 @@ const ChatBox = ({
 
   if (mobile) {
     return (
-      <div className="flex flex-col border-t border-chat bg-black/60 font-mono text-xs">
+      <div className="z-30 flex flex-col border-t border-chat bg-black/60 font-mono text-xs">
         <div className="flex items-center justify-between bg-chat px-3 py-1.5 select-none">
           <span className="text-white text-xs tracking-wide">CHAT</span>
           <span className="h-2 w-2 rounded-full bg-white animate-blink" />
@@ -242,7 +242,9 @@ const ChatBox = ({
           {pinned.map(m => (
             <div key={m.id} className="text-white font-bold">
               📌 anonymous{m.anon_number}:{' '}
-              <span className="font-normal text-chat text-pink-500">{m.body}</span>
+              <span className="font-normal text-chat text-pink-500">
+                {m.body}
+              </span>
             </div>
           ))}
         </div>
@@ -289,7 +291,7 @@ const ChatBox = ({
             onChange={e => setDraft(e.target.value.slice(0, CHAT_CHAR_LIMIT))}
             onKeyDown={e => e.key === 'Enter' && sendMessage()}
             placeholder="Type here"
-            className="flex-1 bg-transparent text-chat placeholder:text-white/30 outline-none"
+            className="flex-1 bg-transparent text-chat placeholder:text-white/30 text-green-500 outline-none"
           />
           <span className="text-[10px] text-white/40">
             {draft.length}/{CHAT_CHAR_LIMIT}

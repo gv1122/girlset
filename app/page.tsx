@@ -38,16 +38,25 @@ const Home = () => {
   const handleCapture = async () => {
     const isMobileDevice = window.innerWidth < 640;
 
-    if (isMobileDevice) {
-      if (!canvas) return;
+    try {
+      const html2canvas = (await import('html2canvas')).default;
 
-      const dataUrl = canvas.toDataURL('image/png');
+      if (!stageContainerRef.current) return;
 
-      if (navigator.share && navigator.canShare) {
+      const shot = await html2canvas(stageContainerRef.current, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#000000',
+        scale: isMobileDevice ? 0.5 : 1,
+        ignoreElements: el => el.hasAttribute('data-html2canvas-ignore')
+      });
+
+      const dataUrl = shot.toDataURL('image/png');
+
+      if (isMobileDevice && navigator.share && navigator.canShare) {
         try {
           const blob = await (await fetch(dataUrl)).blob();
           const file = new File([blob], 'girlset.png', { type: 'image/png' });
-
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({ files: [file], title: 'GIRLSET' });
             return;
@@ -59,30 +68,23 @@ const Home = () => {
       a.href = dataUrl;
       a.download = 'girlset.png';
       a.click();
-
-      return;
-    }
-
-    if (!stageContainerRef.current) return;
-
-    try {
-      const html2canvas = (await import('html2canvas')).default;
-      const shot = await html2canvas(stageContainerRef.current, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#000000',
-        scale: 1
-      });
-      const dataUrl = shot.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = 'girlset.png';
-      a.click();
     } catch {
       if (!canvas) return;
+      const dataUrl = canvas.toDataURL('image/png');
+
+      if (isMobileDevice && navigator.share && navigator.canShare) {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], 'girlset.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'GIRLSET' });
+            return;
+          }
+        } catch {}
+      }
 
       const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
+      a.href = dataUrl;
       a.download = 'girlset.png';
       a.click();
     }
@@ -128,6 +130,8 @@ const Home = () => {
           ) : (
             <div className="absolute inset-0 bg-black" />
           )}
+
+          {/* Desktop: draggable overlay */}
           {showChat && (
             <div className="hidden sm:contents">
               <ChatBox
@@ -140,20 +144,21 @@ const Home = () => {
               />
             </div>
           )}
-        </div>
 
-        {showChat && (
-          <div className="sm:hidden shrink-0">
-            <ChatBox
-              anonNumber={anonNumber}
-              displayName={displayName}
-              bannedWords={bannedWords}
-              onJoin={claim}
-              joining={claiming}
-              mobile={true}
-            />
-          </div>
-        )}
+          {/* Mobile: anchored to bottom, still inside the capture area */}
+          {showChat && (
+            <div className="absolute bottom-0 left-0 right-0 sm:hidden">
+              <ChatBox
+                anonNumber={anonNumber}
+                displayName={displayName}
+                bannedWords={bannedWords}
+                onJoin={claim}
+                joining={claiming}
+                mobile={true}
+              />
+            </div>
+          )}
+        </div>
 
         <Footer
           showMedia={showMedia}

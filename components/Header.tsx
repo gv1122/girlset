@@ -29,7 +29,7 @@ export default function Header({
             rel="noreferrer"
             className="inline-flex items-center gap-1 bg-chat px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs text-white hover:brightness-110 transition-[filter] whitespace-nowrap"
           >
-            <span className="hidden sm:inline">Pre-Save the new song</span>
+            <span className="hidden sm:inline">Pre-Save "CHAT"</span>
             <span className="sm:hidden">Pre-Save</span>
             <span aria-hidden>→</span>
           </a>
