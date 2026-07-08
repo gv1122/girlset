@@ -69,11 +69,13 @@ const Home = () => {
           const blob = await (await fetch(dataUrl)).blob();
           const file = new File([blob], 'girlset.png', { type: 'image/png' });
 
-          alert({
-            canShare: navigator.canShare?.({ files: [file] }),
-            fileSize: file.size,
-            type: file.type
-          });
+          alert(
+            JSON.stringify({
+              canShare: navigator.canShare?.({ files: [file] }),
+              fileSize: file.size,
+              type: file.type
+            })
+          );
 
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({ files: [file], title: 'GIRLSET' });
