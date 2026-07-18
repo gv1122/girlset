@@ -68,7 +68,7 @@ const ChatBox = ({
           .from('messages')
           .select('*')
           .eq('is_pinned', false)
-          .order('created_at', { ascending: true })
+          .order('created_at', { ascending: false })
           .limit(200)
       ]);
 
@@ -84,7 +84,7 @@ const ChatBox = ({
 
       setMessages([
         ...(pinnedResult.data ?? []),
-        ...(feedResult.data ?? [])
+        ...(feedResult.data ?? []).reverse()
       ] as Message[]);
     };
 
